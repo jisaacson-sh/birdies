@@ -85,7 +85,9 @@ h2 small { font-family: var(--font-body); font-weight: 400; font-size: 14px; col
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .sw { width: 16px; height: 16px; border-radius: 2px; display: inline-block; border: 1.5px solid var(--box); background: var(--card); color: var(--given-ink); }
 .sw.g { background-color: var(--given); border-color: var(--given-line); }
-.sw.g, .cell.g { background-image: linear-gradient(to top right, transparent calc(50% - .6px), currentColor calc(50% - .6px), currentColor calc(50% + .6px), transparent calc(50% + .6px)), linear-gradient(to bottom right, transparent calc(50% - .6px), currentColor calc(50% - .6px), currentColor calc(50% + .6px), transparent calc(50% + .6px)); }
+.x { width: 17px; height: 17px; display: block; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; }
+.sw.g { display: inline-grid; place-items: center; }
+.sw.g .x { width: 11px; height: 11px; stroke-width: 1.7; }
 .sw.b { background: var(--birdie); border-color: var(--birdie); }
 .sw.f { background: var(--birdie); border-color: var(--fresh); box-shadow: inset 0 0 0 2px var(--fresh); }
 
@@ -148,7 +150,7 @@ footer ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 3px; max-wi
         <label class="search" for="q"><span class="visually">Find a player</span><input id="q" type="search" placeholder="Last name" autocomplete="off"></label>
       </div>
       <div class="legend" style="margin:10px 0 12px">
-        <span><i class="sw g"></i>Starting hole (Low Index credit)</span>
+        <span><i class="sw g"><svg class="x" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg></i>Starting hole (Low Index credit)</span>
         <span><i class="sw b"></i>Birdie earned (date)</span>
         <span><i class="sw f"></i>Earned in the latest round</span>
         <span><i class="sw"></i>Still open</span>
@@ -237,7 +239,7 @@ const DATA = {"season": "2027", "entry_fee": 25, "pars": [4, 4, 3, 5, 4, 4, 4, 3
   const body = players.map((p) => {
     const cells = holes.map((h) => {
       let cls = "", label = "", title = `Hole ${h}: open`;
-      if (p.given.includes(h)) { cls = "g"; title = `Hole ${h}: starting credit`; }
+      if (p.given.includes(h)) { cls = "g"; label = '<svg class="x" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg>'; title = `Hole ${h}: starting credit`; }
       else if (p.earnedMap.has(h)) {
         const e = p.earnedMap.get(h);
         cls = "b" + (last && e.event === last.event ? " f" : "");
