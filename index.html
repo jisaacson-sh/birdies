@@ -51,8 +51,24 @@ header.band { background: var(--band); color: var(--band-ink); }
 header.band .wrap { padding-block: 28px 24px; display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: end; justify-content: space-between; }
 .eyebrow { font-family: var(--font-display); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; font-size: 13px; opacity: .8; }
 h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(34px, 6vw, 52px); line-height: 1; margin: 4px 0 0; text-wrap: balance; letter-spacing: .01em; }
-.status { font-size: 14px; opacity: .9; text-align: right; }
+.status { font-size: 14px; text-align: right; }
 .status strong { font-weight: 600; }
+.rounds { position: relative; display: inline-block; }
+.rounds summary { cursor: pointer; list-style: none; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+.rounds summary::-webkit-details-marker { display: none; }
+.rounds summary::after { content: " ▾"; font-size: 11px; }
+.rounds[open] summary::after { content: " ▴"; }
+.rounds summary:focus-visible { outline: 2px solid var(--band-ink); outline-offset: 2px; border-radius: 2px; }
+.rounds-panel { position: absolute; right: 0; top: calc(100% + 8px); z-index: 5; width: min(320px, calc(100vw - 32px)); text-align: left; background: var(--card); color: var(--ink); border: 1px solid var(--rule); border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.18); padding: 12px 14px; }
+.rounds-title { font-family: var(--font-display); font-weight: 600; letter-spacing: .1em; text-transform: uppercase; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.rounds-panel ul { list-style: none; margin: 0; padding: 0; display: grid; }
+.rounds-panel li { padding: 8px 0; border-top: 1px solid var(--rule); }
+.rounds-panel li:first-child { border-top: 0; padding-top: 2px; }
+.r-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.r-top b { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+.r-state { font-family: var(--font-display); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: 11px; color: var(--muted); }
+.r-state.live { color: #1d1503; background: var(--fresh); padding: 1px 6px; border-radius: 3px; }
+.r-sub { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
 .pill { display: inline-block; font-family: var(--font-display); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: 12px; padding: 2px 8px; border-radius: 3px; background: var(--fresh); color: #1d1503; vertical-align: 1px; margin-left: 6px; }
 
 main .wrap { padding-block: 24px 48px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
@@ -193,9 +209,21 @@ const DATA = {"season": "2027", "entry_fee": 25, "pars": [4, 4, 3, 5, 4, 4, 4, 3
   const leaders = players.filter((p) => p.total === top);
 
   $("season").textContent = DATA.season;
+  const roundRows = rounds.slice().reverse().map((r) => {
+    const when = (r.title.match(/\(([^)]+)\)/) || [, r.date])[1];
+    return `<li><div class="r-top"><b>${esc(r.name)}</b><span class="r-state${r.in_progress ? " live" : ""}">${r.in_progress ? "Scores coming in" : "Final"}</span></div>` +
+      `<div class="r-sub">${esc(when)} · ${r.played} contestants · ${r.birdies.length} new birdie${r.birdies.length === 1 ? "" : "s"}</div></li>`;
+  }).join("");
   $("status").innerHTML = last
-    ? `Through <strong>${esc(last.name)}</strong> · ${esc(last.date)}${last.in_progress ? '<span class="pill">Scores coming in</span>' : ""}<br>${rounds.length} home tournament${rounds.length === 1 ? "" : "s"} counted`
+    ? `Through <strong>${esc(last.name)}</strong> · ${esc(last.date)}${last.in_progress ? '<span class="pill">Scores coming in</span>' : ""}<br>` +
+      `<details class="rounds" id="roundsList"><summary>${rounds.length} home tournament${rounds.length === 1 ? "" : "s"} counted</summary>` +
+      `<div class="rounds-panel"><div class="rounds-title">Tournaments counted</div><ul>${roundRows}</ul></div></details>`
     : "Season starts soon";
+  document.addEventListener("click", (e) => {
+    const d = $("roundsList");
+    if (d && d.open && !d.contains(e.target)) d.open = false;
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("roundsList")) $("roundsList").open = false; });
 
   $("pot").textContent = fmtMoney(players.length * DATA.entry_fee);
   $("potSub").textContent = `${players.length} players × ${fmtMoney(DATA.entry_fee)}`;
